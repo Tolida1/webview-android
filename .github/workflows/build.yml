@@ -1,0 +1,33 @@
+name: WebView APK Builder
+
+on:
+  repository_dispatch:
+    types: [build-apk]
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Kodları Checkout Et
+      uses: actions/checkout@v4
+
+    - name: Java JDK 17 Kur
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Android SDK Kurulumu
+      uses: android-actions/setup-android@v3
+
+    - name: APK Üret
+      run: |
+        chmod +x ./gradlew
+        ./gradlew assembleRelease -PappName="${{ github.event.client_payload.app_name }}" -PwebviewUrl="${{ github.event.client_payload.web_url }}"
+
+    - name: APK'yı Artifact Olarak Yükle
+      uses: actions/upload-artifact@v4
+      with:
+        name: WebViewApp
+        path: app/build/outputs/apk/release/app-release.apk
